@@ -34,13 +34,19 @@
 
   <script>
     // 🔹 Firebase Config
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "helpinfo-10fcc.firebaseapp.com",
-      projectId: "helpinfo-10fcc",
-      storageBucket: "helpinfo-10fcc.appspot.com",
-      messagingSenderId: "745779823638",
-      appId: "YOUR_APP_ID"
+  const firebaseConfig = {
+  apiKey: "AIzaSyBe_RG6iSCGHM93FOdLHsJsQaRjCVH6sws",
+  authDomain: "helpinfo-10fcc.firebaseapp.com",
+  projectId: "helpinfo-10fcc",
+  storageBucket: "helpinfo-10fcc.firebasestorage.app",
+  messagingSenderId: "745779823638",
+  appId: "1:745779823638:web:10c86d7ec2894d21212137",
+  measurementId: "G-083XZVRZ2F"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
     };
 
     firebase.initializeApp(firebaseConfig);
