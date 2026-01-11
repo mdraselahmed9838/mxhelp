@@ -1,8 +1,8 @@
 
 import { User, TimeSlot, UserRole, Gender, StaffStatus, SlotShift } from './types';
 
-const USERS_KEY = 'tss_users_v2';
-const SLOTS_KEY = 'tss_slots_v2';
+const USERS_KEY = 'tss_users_v2_final';
+const SLOTS_KEY = 'tss_slots_v2_final';
 
 const INITIAL_ADMIN: User = {
   id: 'admin-1',
@@ -16,8 +16,8 @@ const INITIAL_ADMIN: User = {
 };
 
 const INITIAL_SLOTS: TimeSlot[] = [
-  { id: '1', label: 'Morning Session A', startTime: '08:00', endTime: '10:00', shift: SlotShift.MORNING },
-  { id: '2', label: 'Afternoon Workshop', startTime: '14:00', endTime: '16:00', shift: SlotShift.AFTERNOON },
+  { id: '1', label: 'Morning Session A', startTime: '08:00', endTime: '10:00', shift: SlotShift.MORNING, isActive: true },
+  { id: '2', label: 'Afternoon Workshop', startTime: '14:00', endTime: '16:00', shift: SlotShift.AFTERNOON, isActive: true },
 ];
 
 export class DB {
@@ -50,6 +50,8 @@ export class DB {
 
   static addUser(user: User) {
     const users = this.getUsers();
+    // Prevent duplicates
+    if (users.some(u => u.email === user.email)) return;
     users.push(user);
     this.setUsers(users);
   }
