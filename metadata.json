@@ -1,0 +1,5 @@
+{
+  "name": "TrainSupport Pro",
+  "description": "A comprehensive Training Support System featuring role-based management for Admins, Staff (Teachers), and Subscribers (Students). Manage time slots, assignments, and profiles with ease.",
+  "requestFramePermissions": []
+}
