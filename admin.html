@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Users</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body class="bg-slate-100 min-h-screen p-6">
+
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-2xl font-semibold mb-4">👨‍💼 Admin Panel – User List</h2>
+
+    <table class="w-full border">
+      <thead class="bg-slate-200">
+        <tr>
+          <th class="border p-2 text-left">Name</th>
+          <th class="border p-2 text-left">Email</th>
+          <th class="border p-2 text-left">Created</th>
+        </tr>
+      </thead>
+      <tbody id="userTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+    // 🔹 Firebase Config (same as index.html)
+    const firebaseConfig = {
+  apiKey: "AIzaSyBe_RG6iSCGHM93FOdLHsJsQaRjCVH6sws",
+  authDomain: "helpinfo-10fcc.firebaseapp.com",
+  projectId: "helpinfo-10fcc",
+  storageBucket: "helpinfo-10fcc.firebasestorage.app",
+  messagingSenderId: "745779823638",
+  appId: "1:745779823638:web:10c86d7ec2894d21212137",
+  measurementId: "G-083XZVRZ2F"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const table = document.getElementById("userTable");
+
+    // 🔹 Load users
+    db.collection("users")
+      .orderBy("createdAt", "desc")
+      .onSnapshot((snapshot) => {
+        table.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const date = data.createdAt
+            ? data.createdAt.toDate().toLocaleString()
+            : "";
+
+          table.innerHTML += `
+            <tr>
+              <td class="border p-2">${data.name}</td>
+              <td class="border p-2">${data.email}</td>
+              <td class="border p-2">${date}</td>
+            </tr>
+          `;
+        });
+      });
+  </script>
+
+</body>
+</html>
 
