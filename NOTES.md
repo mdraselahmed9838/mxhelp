@@ -1,25 +1,18 @@
 
-# TrainSupport Pro - User History System
+# TrainSupport Pro - User History & Audit Notes
 
-## Feature Set
+## Data Visibility (How Admin Sees All Info)
+Every field collected during **Student Registration** or **Staff Recruitment** is stored as a single JSON object in the user's record within LocalStorage. 
 
-1. **Persistent Dossiers**:
-   - All user records now contain `registrationDate`, `startDate`, and `endDate`.
-   - Data persists in `localStorage` with the key `tss_users_v3_history`.
+The `PendingApplications.tsx` and `UserManagement.tsx` components use a **Universal Dossier Modal** which:
+1.  Loads the full user object from the `DB`.
+2.  Displays every detail (including the requested training dates, phone specs, and previous experience) in categorized sections.
+3.  Ensures that even after a user is approved, their "Registration History" remains accessible via the **History/Dossier** button.
 
-2. **Pending Application Audit**:
-   - New `PendingApplications.tsx` provides a high-density table of all incoming requests.
-   - Admins can see the requested `Time Slot` and `Training Period` before approving.
-   - Accounts are created as `isBlocked: true` by default upon registration.
+## Persistence
+-   **Storage Key**: `tss_users_v4_master`.
+-   **Security**: Admin credentials are no longer hardcoded in the production UI logic (Demo admin is provided in `store.ts` for development).
+-   **Block Logic**: Any user with `isBlocked: true` (default for new registrations) is denied login in `App.tsx`.
 
-3. **Full Audit Logs (History)**:
-   - In `User Listing`, the "History" button opens a comprehensive dossier.
-   - This dossier displays every field ever collected from the user (Personal, Training, Technical, Staff-specific).
-
-4. **Activation Logic**:
-   - Login is strictly prohibited for users with `isBlocked: true`.
-   - Admin "Approval" in the Pending panel flips `isBlocked` to `false` and sets `status` to `APPROVED`.
-
-## Deployment
-- `vercel.json` rewrite rules are maintained for SPA support.
-- Production environment correctly hides demo admin credentials.
+## Vercel Deployment
+The app uses `BrowserRouter` with a `vercel.json` rewrite rule to ensure that deep links (like `/pending`) work correctly after a browser refresh on the live server.
