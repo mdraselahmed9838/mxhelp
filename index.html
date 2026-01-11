@@ -1,82 +1,86 @@
-<script type="module">
-import React, { useState } from "react";
-import ReactDOM from "react-dom";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrainSupport Pro</title>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBe_RG6iSCGHM93FOdLHsJsQaRjCVH6sws",
-  authDomain: "helpinfo-10fcc.firebaseapp.com",
-  projectId: "helpinfo-10fcc",
-  storageBucket: "helpinfo-10fcc.firebasestorage.app",
-  messagingSenderId: "745779823638",
-  appId: "1:745779823638:web:8833aaf14f0c740d212137",
-  measurementId: "G-MRLVSLXXGL"
-};
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-// 🔹 React Component
-function UserForm() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+  <!-- 🔥 Firebase CDN (IMPORTANT) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const docRef = await addDoc(collection(db, "users"), {
-        name,
-        email,
-        createdAt: Timestamp.now()
-      });
-      setMessage(`User saved! ID: ${docRef.id}`);
-      setName("");
-      setEmail("");
-    } catch (error) {
-      console.error(error);
-      setMessage("Error saving user!");
-    }
-  };
+<body class="bg-slate-50 text-slate-900 flex items-center justify-center min-h-screen">
 
-  return (
-    <div className="max-w-md mx-auto mt-20 p-6 bg-white shadow-md rounded-md">
-      <h2 className="text-xl font-semibold mb-4">User Registration</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col">
-        <input
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="mb-3 p-2 border rounded"
-          required
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mb-3 p-2 border rounded"
-          required
-        />
-        <button type="submit" className="bg-blue-600 text-white p-2 rounded">
-          Save User
-        </button>
-      </form>
-      {message && <p className="mt-3">{message}</p>}
-    </div>
-  );
-}
+  <div class="bg-white p-6 rounded shadow w-full max-w-md">
+    <h2 class="text-xl font-semibold mb-4 text-center">User Registration</h2>
 
-ReactDOM.render(<UserForm />, document.getElementById("root"));
-</script>
+    <form id="userForm" class="space-y-4">
+      <input id="name" type="text" placeholder="Name" required
+        class="w-full border px-3 py-2 rounded">
+
+      <input id="email" type="email" placeholder="Email" required
+        class="w-full border px-3 py-2 rounded">
+
+      <button type="submit"
+        class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+        Save User
+      </button>
+    </form>
+
+    <p id="msg" class="mt-4 text-center text-sm"></p>
+  </div>
+
+  <script>
+    // 🔹 Firebase Config (নিজেরটা বসাও)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "helpinfo-10fcc.firebaseapp.com",
+      projectId: "helpinfo-10fcc",
+      storageBucket: "helpinfo-10fcc.appspot.com",
+      messagingSenderId: "745779823638",
+      appId: "YOUR_APP_ID"
+    };
+
+    // 🔹 Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // 🔹 Form Submit
+    document.getElementById("userForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const msg = document.getElementById("msg");
+
+      try {
+        await db.collection("users").add({
+          name,
+          email,
+          createdAt: firebase.firestore.Timestamp.now()
+        });
+
+        msg.textContent = "✅ User saved successfully!";
+        msg.className = "text-green-600 text-center";
+        e.target.reset();
+      } catch (err) {
+        msg.textContent = "❌ Error saving user";
+        msg.className = "text-red-600 text-center";
+        console.error(err);
+      }
+    });
+  </script>
+
+</body>
+</html>
