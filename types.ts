@@ -78,6 +78,7 @@ export interface TimeSlot {
   endTime: string;
   shift: SlotShift;
   teacherId?: string;
+  isActive: boolean; // Added for status management
 }
 
 export interface AuthState {
