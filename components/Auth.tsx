@@ -78,7 +78,6 @@ export const Login: React.FC = () => {
              </Link>
           </div>
           <div className="mt-4 text-[10px] text-slate-300">
-            Demo Admin: admin@tss.com / admin
           </div>
         </div>
       </div>
