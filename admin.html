@@ -4,64 +4,83 @@
   <meta charset="UTF-8">
   <title>Admin Panel - Users</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase v9+ modular SDK -->
+  <script type="module">
+    // Import Firebase functions
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, doc, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
 
-  <!-- Firebase CDN -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBe_RG6iSCGHM93FOdLHsJsQaRjCVH6sws",
+      authDomain: "helpinfo-10fcc.firebaseapp.com",
+      projectId: "helpinfo-10fcc",
+      storageBucket: "helpinfo-10fcc.appspot.com",
+      messagingSenderId: "745779823638",
+      appId: "1:745779823638:web:10c86d7ec2894d21212137",
+      measurementId: "G-083XZVRZ2F"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    const table = document.getElementById("userTable");
+
+    // Load users live
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, orderBy("createdAt", "desc"));
+
+    onSnapshot(q, (snapshot) => {
+      table.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        const date = data.createdAt instanceof Timestamp 
+                     ? data.createdAt.toDate().toLocaleString() 
+                     : "";
+        table.innerHTML += `
+          <tr>
+            <td class="border p-2">${data.name || ""}</td>
+            <td class="border p-2">${data.email || ""}</td>
+            <td class="border p-2">${date}</td>
+            <td class="border p-2">
+              <button onclick="deleteUser('${docSnap.id}')" class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    });
+
+    // Delete user function
+    window.deleteUser = async function(id) {
+      if(confirm("Are you sure to delete this user?")) {
+        try {
+          await deleteDoc(doc(db, "users", id));
+          alert("User deleted");
+        } catch(err) {
+          alert("Error: " + err.message);
+        }
+      }
+    }
+  </script>
 </head>
 <body class="bg-slate-100 min-h-screen p-6">
-
   <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
     <h2 class="text-2xl font-semibold mb-4">👨‍💼 Admin Panel – User List</h2>
-
     <table class="w-full border">
       <thead class="bg-slate-200">
         <tr>
           <th class="border p-2 text-left">Name</th>
           <th class="border p-2 text-left">Email</th>
           <th class="border p-2 text-left">Created</th>
+          <th class="border p-2 text-left">Action</th>
         </tr>
       </thead>
       <tbody id="userTable"></tbody>
     </table>
   </div>
-
-  <script>
-    // 🔹 Firebase Config
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "helpinfo-10fcc.firebaseapp.com",
-      projectId: "helpinfo-10fcc",
-      storageBucket: "helpinfo-10fcc.appspot.com",
-      messagingSenderId: "745779823638",
-      appId: "YOUR_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const table = document.getElementById("userTable");
-
-    // 🔹 Load users live
-    db.collection("users")
-      .orderBy("createdAt", "desc")
-      .onSnapshot((snapshot) => {
-        table.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const date = data.createdAt ? data.createdAt.toDate().toLocaleString() : "";
-          table.innerHTML += `
-            <tr>
-              <td class="border p-2">${data.name}</td>
-              <td class="border p-2">${data.email}</td>
-              <td class="border p-2">${date}</td>
-            </tr>
-          `;
-        });
-      });
-  </script>
-
 </body>
 </html>
