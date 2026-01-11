@@ -40,9 +40,9 @@ export interface User {
   gender: Gender;
   whatsapp: string;
   role: UserRole;
-  isBlocked: boolean; // Acts as the INACTIVE/ACTIVE toggle
+  isBlocked: boolean; // INACTIVE/ACTIVE toggle
   
-  // Registration History Fields
+  // Registration History & Training Dates
   registrationDate: string;
   startDate?: string;
   endDate?: string;
@@ -50,6 +50,7 @@ export interface User {
   preferredTimeSlotId?: string;
   assignedTimeSlotId?: string;
   
+  // Recruitment Specific Fields (Persistent History)
   status?: StaffStatus;
   agreement?: boolean;
   religion?: string;
