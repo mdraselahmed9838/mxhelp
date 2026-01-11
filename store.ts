@@ -1,8 +1,8 @@
 
 import { User, TimeSlot, UserRole, Gender, StaffStatus, SlotShift } from './types';
 
-const USERS_KEY = 'tss_users_v2_final';
-const SLOTS_KEY = 'tss_slots_v2_final';
+const USERS_KEY = 'tss_users_v3_history';
+const SLOTS_KEY = 'tss_slots_v3_history';
 
 const INITIAL_ADMIN: User = {
   id: 'admin-1',
@@ -12,13 +12,9 @@ const INITIAL_ADMIN: User = {
   gender: Gender.OTHER,
   whatsapp: '+123456789',
   role: UserRole.ADMIN,
-  isBlocked: false
+  isBlocked: false,
+  registrationDate: new Date().toISOString()
 };
-
-const INITIAL_SLOTS: TimeSlot[] = [
-  { id: '1', label: 'Morning Session A', startTime: '08:00', endTime: '10:00', shift: SlotShift.MORNING, isActive: true },
-  { id: '2', label: 'Afternoon Workshop', startTime: '14:00', endTime: '16:00', shift: SlotShift.AFTERNOON, isActive: true },
-];
 
 export class DB {
   static getUsers(): User[] {
@@ -37,10 +33,7 @@ export class DB {
 
   static getSlots(): TimeSlot[] {
     const data = localStorage.getItem(SLOTS_KEY);
-    if (!data) {
-      localStorage.setItem(SLOTS_KEY, JSON.stringify(INITIAL_SLOTS));
-      return INITIAL_SLOTS;
-    }
+    if (!data) return [];
     return JSON.parse(data);
   }
 
@@ -50,9 +43,11 @@ export class DB {
 
   static addUser(user: User) {
     const users = this.getUsers();
-    // Prevent duplicates
     if (users.some(u => u.email === user.email)) return;
-    users.push(user);
+    users.push({
+      ...user,
+      registrationDate: user.registrationDate || new Date().toISOString()
+    });
     this.setUsers(users);
   }
 
