@@ -8,7 +8,7 @@ import {
   UserCircle, Mail, Phone, MapPin, GraduationCap, Heart, Clock3, Globe, 
   Facebook, MessageSquareQuote, StickyNote, Info, AlertTriangle, Edit3, 
   Sun, Sunset, Moon, CloudSun, Search, Key, ShieldCheck, ShieldAlert, Ban,
-  ArrowUpDown, ChevronUp, ChevronDown, Lock, Power, PowerOff
+  ArrowUpDown, ChevronUp, ChevronDown, Lock, Power, PowerOff, X, Briefcase
 } from 'lucide-react';
 
 type SortKey = 'id' | 'fullName' | 'email' | 'role' | 'isBlocked';
@@ -50,12 +50,14 @@ const AdminPanel: React.FC = () => {
   };
 
   const handleApprove = (id: string) => {
-    DB.updateUser(id, { status: StaffStatus.APPROVED });
+    DB.updateUser(id, { status: StaffStatus.APPROVED, isBlocked: false });
+    setViewingStaff(null);
     refreshData();
   };
 
   const handleReject = (id: string) => {
-    DB.updateUser(id, { status: StaffStatus.REJECTED });
+    DB.updateUser(id, { status: StaffStatus.REJECTED, isBlocked: true });
+    setViewingStaff(null);
     refreshData();
   };
 
@@ -506,6 +508,139 @@ const AdminPanel: React.FC = () => {
         </div>
       )}
 
+      {/* Staff Application Dossier Modal */}
+      {viewingStaff && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in duration-200">
+            <div className="p-8 border-b bg-slate-50 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+                  <ShieldCheck className="text-blue-600" /> Staff Application Dossier
+                </h3>
+                <p className="text-xs text-slate-500">Full verified recruitment record for {viewingStaff.fullName}</p>
+              </div>
+              <button onClick={() => setViewingStaff(null)} className="p-2 hover:bg-slate-200 rounded-full transition"><X size={24} className="text-slate-400" /></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <Section title="Personal Profile" icon={<UserCircle size={16}/>}>
+                    <Detail label="Full Name" value={viewingStaff.fullName} />
+                    <Detail label="Gender" value={viewingStaff.gender} />
+                    <Detail label="Religion" value={viewingStaff.religion} />
+                    <Detail label="Status" value={viewingStaff.relationshipStatus} />
+                    <Detail label="Birth Order" value={viewingStaff.birthOrder} />
+                 </Section>
+
+                 <Section title="Contact & Social" icon={<Globe size={16}/>}>
+                    <Detail label="WhatsApp" value={viewingStaff.whatsapp} highlight />
+                    <Detail label="Email" value={viewingStaff.email} />
+                    <Detail label="Secondary Phone" value={viewingStaff.phoneNumber} />
+                    <Detail label="Facebook" value={viewingStaff.fbLink} isLink />
+                 </Section>
+
+                 <Section title="Work & Education" icon={<GraduationCap size={16}/>}>
+                    <Detail label="Education" value={viewingStaff.education} />
+                    <Detail label="Division" value={viewingStaff.division} />
+                    <Detail label="Student Status" value={viewingStaff.isRegularStudent ? 'Regular Student' : 'Not Regular'} />
+                    <Detail label="Available Hours" value={viewingStaff.availableHours} highlight />
+                 </Section>
+
+                 <Section title="Technical Assets" icon={<Smartphone size={16}/>}>
+                    <Detail label="Primary Device" value={viewingStaff.deviceSelection} />
+                    <Detail label="Phone Brand" value={viewingStaff.phoneBrand} />
+                    <Detail label="RAM / ROM" value={viewingStaff.phoneSpecs} />
+                    <Detail label="Uses IMO?" value={viewingStaff.usesImo} />
+                 </Section>
+
+                 <div className="md:col-span-2 space-y-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <StickyNote size={14}/> Professional Background
+                    </p>
+                    <div className="bg-slate-50 p-4 rounded-2xl border text-sm text-slate-700 italic leading-relaxed">
+                      {viewingStaff.previousSites || 'No previous site experience listed.'}
+                    </div>
+                 </div>
+              </div>
+            </div>
+            
+            <div className="p-8 border-t bg-slate-50 flex justify-end gap-3">
+               <button 
+                  onClick={() => setViewingStaff(null)}
+                  className="bg-white border text-slate-600 px-6 py-3 rounded-2xl font-bold hover:bg-slate-100 transition"
+                >
+                  Close
+                </button>
+               <button 
+                  onClick={() => handleReject(viewingStaff.id)}
+                  className="bg-amber-50 text-amber-600 px-6 py-3 rounded-2xl font-bold border border-amber-100 hover:bg-amber-100 transition"
+                >
+                  Reject Application
+                </button>
+               <button 
+                  onClick={() => handleApprove(viewingStaff.id)}
+                  className="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-100 flex items-center gap-2 hover:bg-emerald-700 transition"
+                >
+                  <CheckCircle size={18} /> Approve Instructor
+                </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Private Notes Modal */}
+      {noteSubscriber && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in duration-200">
+            <div className="p-6 bg-slate-50 border-b flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                  <MessageSquareQuote className="text-blue-600" size={20} /> Administrative Notes
+                </h3>
+                <p className="text-xs text-slate-500">Private observations for {noteSubscriber.fullName}</p>
+              </div>
+              <button onClick={() => setNoteSubscriber(null)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={24} className="text-slate-400" /></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
+               {noteSubscriber.privateNotes && noteSubscriber.privateNotes.length > 0 ? (
+                 noteSubscriber.privateNotes.map(note => (
+                   <div key={note.id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-black uppercase text-blue-600">{note.authorName}</span>
+                        <span className="text-[10px] text-slate-400">{new Date(note.timestamp).toLocaleString()}</span>
+                      </div>
+                      <p className="text-sm text-slate-700 leading-relaxed">{note.text}</p>
+                   </div>
+                 ))
+               ) : (
+                 <div className="text-center py-10">
+                   <StickyNote className="mx-auto text-slate-200 mb-2" size={48} />
+                   <p className="text-sm text-slate-400 italic">No notes found for this user.</p>
+                 </div>
+               )}
+            </div>
+
+            <div className="p-6 border-t bg-white space-y-3">
+              <textarea 
+                className="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                rows={3} 
+                placeholder="Write a private note..."
+                value={newNote}
+                onChange={e => setNewNote(e.target.value)}
+              />
+              <button 
+                onClick={handleAddNote}
+                disabled={!newNote.trim()}
+                className="w-full bg-blue-600 text-white p-3 rounded-xl font-bold hover:bg-blue-700 transition disabled:opacity-50"
+              >
+                Save Record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
@@ -515,7 +650,7 @@ const AdminPanel: React.FC = () => {
             </div>
             <h3 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight">Irreversible Action</h3>
             <p className="text-slate-500 text-sm mb-8 leading-relaxed">
-              Confirm permanent deletion of <strong>{deleteTarget.name}</strong>. This data cannot be recovered.
+              Confirm permanent deletion of <strong>{deleteTarget.name}</strong>. This data cannot be recovered from the exchange history.
             </p>
             <div className="flex w-full gap-3">
               <button onClick={() => setDeleteTarget(null)} className="flex-1 bg-slate-100 text-slate-600 p-4 rounded-2xl font-bold">Cancel</button>
@@ -525,10 +660,61 @@ const AdminPanel: React.FC = () => {
         </div>
       )}
 
-      {/* Reuse Modals for viewingStaff and noteSubscriber as previously implemented... */}
+      {/* Add Slot Modal UI logic stays the same but properly integrated with handleSubmit */}
+      {isSlotModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+           <form onSubmit={saveSlot} className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl border flex flex-col overflow-hidden animate-in zoom-in duration-200">
+              <div className="p-8 border-b flex justify-between items-center bg-slate-50">
+                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">Configure Workstation</h3>
+                <button type="button" onClick={() => setIsSlotModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition"><X size={24} className="text-slate-400" /></button>
+              </div>
+              <div className="p-8 space-y-4">
+                <input required className="w-full border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition" placeholder="Workstation Label" value={editingSlot?.label || ''} onChange={e => setEditingSlot({...editingSlot!, label: e.target.value})} />
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="time" required className="w-full border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition" value={editingSlot?.startTime || ''} onChange={e => setEditingSlot({...editingSlot!, startTime: e.target.value})} />
+                  <input type="time" required className="w-full border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition" value={editingSlot?.endTime || ''} onChange={e => setEditingSlot({...editingSlot!, endTime: e.target.value})} />
+                </div>
+                <select className="w-full border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition" value={editingSlot?.shift || SlotShift.MORNING} onChange={e => setEditingSlot({...editingSlot!, shift: e.target.value as SlotShift})}>
+                  {Object.values(SlotShift).map(s => <option key={s} value={s}>{s} Shift</option>)}
+                </select>
+                <select className="w-full border-2 border-slate-100 rounded-2xl p-4 text-sm font-bold focus:border-blue-500 outline-none transition" value={editingSlot?.teacherId || ''} onChange={e => setEditingSlot({...editingSlot!, teacherId: e.target.value})}>
+                  <option value="">No Instructor Assigned</option>
+                  {activeStaff.map(t => <option key={t.id} value={t.id}>{t.fullName}</option>)}
+                </select>
+              </div>
+              <div className="p-8 border-t bg-slate-50 flex gap-3">
+                 <button type="button" onClick={() => setIsSlotModalOpen(false)} className="flex-1 bg-white border text-slate-600 p-4 rounded-2xl font-bold">Discard</button>
+                 <button type="submit" className="flex-1 bg-blue-600 text-white p-4 rounded-2xl font-black shadow-lg shadow-blue-100">Save Configuration</button>
+              </div>
+           </form>
+        </div>
+      )}
     </div>
   );
 };
+
+// Internal Helper Components
+const Section: React.FC<{ title: string, icon: React.ReactNode, children: React.ReactNode }> = ({ title, icon, children }) => (
+  <div className="space-y-4">
+    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b pb-2">
+      {icon} {title}
+    </h4>
+    <div className="grid grid-cols-1 gap-3">
+      {children}
+    </div>
+  </div>
+);
+
+const Detail: React.FC<{ label: string, value: any, highlight?: boolean, isLink?: boolean }> = ({ label, value, highlight, isLink }) => (
+  <div className="space-y-0.5">
+    <p className="text-[9px] font-bold text-slate-400 uppercase">{label}</p>
+    {isLink && value ? (
+      <a href={value} target="_blank" rel="noreferrer" className="text-sm font-bold text-blue-600 hover:underline break-all">{value}</a>
+    ) : (
+      <p className={`text-sm font-bold ${highlight ? 'text-blue-600' : 'text-slate-800'}`}>{value || 'N/A'}</p>
+    )}
+  </div>
+);
 
 const SortIcon: React.FC<{ active: boolean; order: SortOrder }> = ({ active, order }) => {
   if (!active) return <ArrowUpDown size={12} className="opacity-30" />;
