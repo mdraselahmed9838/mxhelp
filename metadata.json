@@ -1,5 +1,90 @@
-{
-  "name": "TrainSupport Pro",
-  "description": "A comprehensive Training Support System featuring role-based management for Admins, Staff (Teachers), and Subscribers (Students). Manage time slots, assignments, and profiles with ease.",
-  "requestFramePermissions": []
+
+import { User, TimeSlot, UserRole, Gender, StaffStatus, SlotShift } from './types';
+
+const USERS_KEY = 'tss_users_v2';
+const SLOTS_KEY = 'tss_slots_v2';
+
+const INITIAL_ADMIN: User = {
+  id: 'admin-1',
+  fullName: 'System Administrator',
+  email: 'admin@tss.com',
+  password: 'admin',
+  gender: Gender.OTHER,
+  whatsapp: '+123456789',
+  role: UserRole.ADMIN,
+  isBlocked: false
+};
+
+const INITIAL_SLOTS: TimeSlot[] = [
+  { id: '1', label: 'Morning Session A', startTime: '08:00', endTime: '10:00', shift: SlotShift.MORNING, isActive: true },
+  { id: '2', label: 'Afternoon Workshop', startTime: '14:00', endTime: '16:00', shift: SlotShift.AFTERNOON, isActive: true },
+];
+
+export class DB {
+  static getUsers(): User[] {
+    const data = localStorage.getItem(USERS_KEY);
+    if (!data) {
+      const initial = [INITIAL_ADMIN];
+      localStorage.setItem(USERS_KEY, JSON.stringify(initial));
+      return initial;
+    }
+    return JSON.parse(data);
+  }
+
+  static setUsers(users: User[]) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+
+  static getSlots(): TimeSlot[] {
+    const data = localStorage.getItem(SLOTS_KEY);
+    if (!data) {
+      localStorage.setItem(SLOTS_KEY, JSON.stringify(INITIAL_SLOTS));
+      return INITIAL_SLOTS;
+    }
+    return JSON.parse(data);
+  }
+
+  static setSlots(slots: TimeSlot[]) {
+    localStorage.setItem(SLOTS_KEY, JSON.stringify(slots));
+  }
+
+  static addUser(user: User) {
+    const users = this.getUsers();
+    users.push(user);
+    this.setUsers(users);
+  }
+
+  static updateUser(userId: string, updates: Partial<User>) {
+    const users = this.getUsers();
+    const idx = users.findIndex(u => u.id === userId);
+    if (idx !== -1) {
+      users[idx] = { ...users[idx], ...updates };
+      this.setUsers(users);
+    }
+  }
+
+  static deleteUser(userId: string) {
+    const users = this.getUsers().filter(u => u.id !== userId);
+    this.setUsers(users);
+  }
+
+  static addSlot(slot: TimeSlot) {
+    const slots = this.getSlots();
+    slots.push(slot);
+    this.setSlots(slots);
+  }
+
+  static updateSlot(slotId: string, updates: Partial<TimeSlot>) {
+    const slots = this.getSlots();
+    const idx = slots.findIndex(s => s.id === slotId);
+    if (idx !== -1) {
+      slots[idx] = { ...slots[idx], ...updates };
+      this.setSlots(slots);
+    }
+  }
+
+  static deleteSlot(slotId: string) {
+    const slots = this.getSlots().filter(s => s.id !== slotId);
+    this.setSlots(slots);
+  }
 }
