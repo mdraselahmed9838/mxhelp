@@ -17,11 +17,6 @@ export enum StaffStatus {
   REJECTED = 'REJECTED'
 }
 
-export enum UserStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE'
-}
-
 export enum SlotShift {
   MORNING = 'Morning',
   AFTERNOON = 'Afternoon',
@@ -45,7 +40,12 @@ export interface User {
   gender: Gender;
   whatsapp: string;
   role: UserRole;
-  isBlocked: boolean; // INACTIVE state
+  isBlocked: boolean; // Acts as the INACTIVE/ACTIVE toggle
+  
+  // Registration History Fields
+  registrationDate: string;
+  startDate?: string;
+  endDate?: string;
   
   preferredTimeSlotId?: string;
   assignedTimeSlotId?: string;
@@ -78,7 +78,7 @@ export interface TimeSlot {
   endTime: string;
   shift: SlotShift;
   teacherId?: string;
-  isActive: boolean; // Added for status management
+  isActive: boolean;
 }
 
 export interface AuthState {
