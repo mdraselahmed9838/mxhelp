@@ -1,19 +1,26 @@
 
-FIX NOTES – TrainSupport Pro
+# TrainSupport Pro - Technical Notes
 
-Identified Problems:
-1. Vercel build failures due to routing and environment mismatch.
-2. HashRouter causing 404 NOT_FOUND on Vercel.
-3. .env.local committed (should not be in production repo).
-4. Import paths must remain case-sensitive (Linux).
+## Fixes & Updates
 
-Fixes Applied:
-- Replaced HashRouter with BrowserRouter in App.tsx.
-- Ensured Auth.tsx uses named exports and matching imports.
-- Kept folder/file casing consistent.
-- Removed .env.local from final build zip.
-- Verified Admin routes (Pending, Teachers, Students, TimeSlots, UserManagement).
+1. **Persistence Strategy**: 
+   - Replaced transient in-memory store with `localStorage` based `DB` class in `store.ts`.
+   - Data persists across browser refreshes and system reloads.
 
-Result:
-- npm run build passes
-- Vercel deploy compatible
+2. **Security & Role Protection**:
+   - **Inactive User Block**: Added `isBlocked` check to the login function. Inactive users are now physically prevented from starting sessions.
+   - **Session Guard**: The `Layout` component now polls the user's status on route changes. If an admin deactivates an active user, they are kicked out of the session immediately.
+   - **Production Credential Hiding**: Login credentials for the demo admin are now conditionally rendered only in development mode (`import.meta.env.DEV`).
+
+3. **Vercel Build Stability**:
+   - **Routing**: Switched from `HashRouter` to `BrowserRouter` for cleaner URLs.
+   - **404 Fix**: Included `vercel.json` with rewrites to ensure direct URL access (e.g., `/users`) correctly loads the React app.
+   - **Linux Case-Sensitivity**: Audited all file paths for correct casing to prevent build-time errors on Linux-based CI/CD environments.
+
+4. **Slot Management**:
+   - Fixed the `Add/Edit/Delete` logic in `TimeSlots.tsx`.
+   - Slots now support `isActive` toggle and proper `teacherId` assignments.
+
+## Credentials (Dev Only)
+- **Admin**: `admin@tss.com` / `admin`
+- **Persistence**: Final storage key is `tss_users_v2_final`.
