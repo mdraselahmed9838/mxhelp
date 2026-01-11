@@ -1,14 +1,14 @@
 
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { User, AuthState, UserRole } from './types';
+import { User, AuthState } from './types';
 import { DB } from './store';
 import { Login, Register } from './components/Auth';
 import StaffRegister from './components/StaffRegister';
 import Dashboard from './components/Dashboard';
 import { Layout } from './components/Layout';
 
-// Admin Pages
+// Modular Admin Pages
 import Pending from './components/Admin/Pending';
 import Teachers from './components/Admin/Teachers';
 import Students from './components/Admin/Students';
@@ -32,7 +32,7 @@ export const useAuth = () => {
 
 const App: React.FC = () => {
   const [auth, setAuth] = useState<AuthState>(() => {
-    const saved = localStorage.getItem('tss_session_v2');
+    const saved = localStorage.getItem('tss_session_active');
     return saved ? { user: JSON.parse(saved), isAuthenticated: true } : { user: null, isAuthenticated: false };
   });
 
@@ -42,25 +42,26 @@ const App: React.FC = () => {
     
     if (user) {
       if (user.isBlocked) {
-        return { success: false, error: 'Your account is Inactive. Please contact Admin.' };
+        return { success: false, error: 'Account Suspended. Please contact support.' };
       }
       setAuth({ user, isAuthenticated: true });
-      localStorage.setItem('tss_session_v2', JSON.stringify(user));
+      localStorage.setItem('tss_session_active', JSON.stringify(user));
       return { success: true };
     }
-    return { success: false, error: 'Invalid credentials' };
+    return { success: false, error: 'Invalid email or password' };
   };
 
   const logout = () => {
     setAuth({ user: null, isAuthenticated: false });
-    localStorage.removeItem('tss_session_v2');
+    localStorage.removeItem('tss_session_active');
   };
 
   const checkSuspension = () => {
     if (auth.user) {
       const users = DB.getUsers();
       const current = users.find(u => u.id === auth.user?.id);
-      if (current?.isBlocked) {
+      // Force logout if blocked while in session
+      if (!current || current.isBlocked) {
         logout();
       }
     }
@@ -77,8 +78,6 @@ const App: React.FC = () => {
           <Route element={auth.isAuthenticated ? <Layout /> : <Navigate to="/login" />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            
-            {/* Admin Modular Routes */}
             <Route path="/pending" element={<Pending />} />
             <Route path="/teachers" element={<Teachers />} />
             <Route path="/students" element={<Students />} />
