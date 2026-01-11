@@ -1,8 +1,8 @@
 
-import { User, TimeSlot, UserRole, Gender, StaffStatus, SlotShift } from './types';
+import { User, TimeSlot, UserRole, Gender, StaffStatus } from './types';
 
-const USERS_KEY = 'tss_users_v3_history';
-const SLOTS_KEY = 'tss_slots_v3_history';
+const USERS_KEY = 'tss_users_v4_master';
+const SLOTS_KEY = 'tss_slots_v4_master';
 
 const INITIAL_ADMIN: User = {
   id: 'admin-1',
@@ -43,12 +43,16 @@ export class DB {
 
   static addUser(user: User) {
     const users = this.getUsers();
-    if (users.some(u => u.email === user.email)) return;
+    if (users.some(u => u.email === user.email)) {
+        alert("This email is already registered.");
+        return false;
+    }
     users.push({
       ...user,
       registrationDate: user.registrationDate || new Date().toISOString()
     });
     this.setUsers(users);
+    return true;
   }
 
   static updateUser(userId: string, updates: Partial<User>) {
@@ -57,7 +61,9 @@ export class DB {
     if (idx !== -1) {
       users[idx] = { ...users[idx], ...updates };
       this.setUsers(users);
+      return true;
     }
+    return false;
   }
 
   static deleteUser(userId: string) {
