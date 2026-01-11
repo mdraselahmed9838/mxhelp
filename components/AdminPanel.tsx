@@ -169,9 +169,9 @@ const AdminPanel: React.FC = () => {
     return result;
   }, [users, userSearchTerm, sortConfig]);
 
-  const pendingApplications = users.filter(u => u.role === UserRole.STAFF && u.status === StaffStatus.PENDING);
+  const pendingApplications = users.filter(u => u.isBlocked && u.role !== UserRole.ADMIN);
   const activeStaff = users.filter(u => u.role === UserRole.STAFF && u.status === StaffStatus.APPROVED);
-  const subscribers = users.filter(u => u.role === UserRole.SUBSCRIBER);
+  const subscribers = users.filter(u => u.role === UserRole.SUBSCRIBER && !u.isBlocked);
 
   return (
     <div className="space-y-6">
@@ -281,6 +281,118 @@ const AdminPanel: React.FC = () => {
         </div>
       )}
 
+      {activeTab === 'applications' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
+          {pendingApplications.map(app => (
+            <div key={app.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition flex flex-col">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="font-black text-slate-800 leading-tight">{app.fullName}</h3>
+                  <p className="text-xs text-slate-500 mt-1">{app.email}</p>
+                </div>
+                <span className="bg-blue-50 text-blue-600 text-[10px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest">PENDING</span>
+              </div>
+              <div className="bg-slate-50 p-3 rounded-2xl text-[10px] font-bold text-slate-500 mb-6 border border-slate-100">
+                Applied on {new Date(app.registrationDate).toLocaleDateString()}
+              </div>
+              <div className="mt-auto flex flex-col gap-3 pt-4 border-t border-slate-50">
+                <button 
+                  onClick={() => setViewingStaff(app)} 
+                  className="w-full bg-slate-100 text-slate-700 p-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition"
+                >
+                  View Full Dossier
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => handleApprove(app.id)} className="bg-[#10a352] text-white p-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#0d8a45] transition">Approve</button>
+                  <button onClick={() => handleReject(app.id)} className="bg-[#fff1f1] text-[#d93025] p-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-[#ffe4e4] transition">Reject</button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {pendingApplications.length === 0 && <EmptyState message="No pending applications." />}
+        </div>
+      )}
+
+      {/* Staff Application Dossier Modal */}
+      {viewingStaff && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in duration-200">
+            <div className="p-8 border-b bg-slate-50 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+                  <ShieldCheck className="text-blue-600" /> Staff Application Dossier
+                </h3>
+                <p className="text-xs text-slate-500">Full verified recruitment record for {viewingStaff.fullName}</p>
+              </div>
+              <button onClick={() => setViewingStaff(null)} className="p-2 hover:bg-slate-200 rounded-full transition"><X size={24} className="text-slate-400" /></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <Section title="Personal Profile" icon={<UserCircle size={16}/>}>
+                    <Detail label="Full Name" value={viewingStaff.fullName} />
+                    <Detail label="Gender" value={viewingStaff.gender} />
+                    <Detail label="Religion" value={viewingStaff.religion} />
+                    <Detail label="Status" value={viewingStaff.relationshipStatus} />
+                    <Detail label="Birth Order" value={viewingStaff.birthOrder} />
+                 </Section>
+
+                 <Section title="Contact & Social" icon={<Globe size={16}/>}>
+                    <Detail label="WhatsApp" value={viewingStaff.whatsapp} highlight />
+                    <Detail label="Email" value={viewingStaff.email} />
+                    <Detail label="Secondary Phone" value={viewingStaff.phoneNumber} />
+                    <Detail label="Facebook" value={viewingStaff.fbLink} isLink />
+                 </Section>
+
+                 <Section title="Work & Education" icon={<GraduationCap size={16}/>}>
+                    <Detail label="Education" value={viewingStaff.education} />
+                    <Detail label="Division" value={viewingStaff.division} />
+                    <Detail label="Student Status" value={viewingStaff.isRegularStudent ? 'Regular Student' : 'Not Regular'} />
+                    <Detail label="Available Hours" value={viewingStaff.availableHours} highlight />
+                 </Section>
+
+                 <Section title="Technical Assets" icon={<Smartphone size={16}/>}>
+                    <Detail label="Primary Device" value={viewingStaff.deviceSelection} />
+                    <Detail label="Phone Brand" value={viewingStaff.phoneBrand} />
+                    <Detail label="RAM / ROM" value={viewingStaff.phoneSpecs} />
+                    <Detail label="Uses IMO?" value={viewingStaff.usesImo} />
+                 </Section>
+
+                 <div className="md:col-span-2 space-y-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <StickyNote size={14}/> Professional Background
+                    </p>
+                    <div className="bg-slate-50 p-4 rounded-2xl border text-sm text-slate-700 italic leading-relaxed">
+                      {viewingStaff.previousSites || 'No previous site experience listed.'}
+                    </div>
+                 </div>
+              </div>
+            </div>
+            
+            <div className="p-8 border-t bg-slate-50 flex justify-end gap-3">
+               <button 
+                  onClick={() => setViewingStaff(null)}
+                  className="bg-white border text-slate-600 px-6 py-3 rounded-2xl font-bold hover:bg-slate-100 transition"
+                >
+                  Close
+                </button>
+               <button 
+                  onClick={() => handleReject(viewingStaff.id)}
+                  className="bg-red-50 text-red-600 px-6 py-3 rounded-2xl font-bold border border-red-100 hover:bg-red-100 transition"
+                >
+                  Reject Application
+                </button>
+               <button 
+                  onClick={() => handleApprove(viewingStaff.id)}
+                  className="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-100 flex items-center gap-2 hover:bg-emerald-700 transition"
+                >
+                  <CheckCircle size={18} /> Approve Instructor
+                </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Confirmation Modal for Status Toggle */}
       {statusTarget && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4">
@@ -341,28 +453,6 @@ const AdminPanel: React.FC = () => {
                 <button type="submit" className="flex-1 bg-blue-600 text-white p-4 rounded-2xl font-bold shadow-lg shadow-blue-100">Update Now</button>
               </div>
            </form>
-        </div>
-      )}
-
-      {activeTab === 'applications' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">
-          {pendingApplications.map(app => (
-            <div key={app.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="font-bold text-slate-800">{app.fullName}</h3>
-                  <p className="text-xs text-slate-500">{app.email}</p>
-                </div>
-                <span className="bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-full font-bold">PENDING</span>
-              </div>
-              <div className="flex gap-2 border-t pt-4">
-                <button onClick={() => setViewingStaff(app)} className="flex-1 bg-slate-100 text-slate-700 p-2 rounded-lg text-xs font-bold hover:bg-slate-200 transition">Details</button>
-                <button onClick={() => handleApprove(app.id)} className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 transition" title="Approve"><CheckCircle size={16} /></button>
-                <button onClick={() => handleReject(app.id)} className="bg-amber-50 text-amber-600 px-3 py-2 rounded-lg hover:bg-amber-100 transition" title="Reject"><XCircle size={16} /></button>
-              </div>
-            </div>
-          ))}
-          {pendingApplications.length === 0 && <EmptyState message="No pending applications." />}
         </div>
       )}
 
@@ -504,86 +594,6 @@ const AdminPanel: React.FC = () => {
                  </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Staff Application Dossier Modal */}
-      {viewingStaff && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in duration-200">
-            <div className="p-8 border-b bg-slate-50 flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
-                  <ShieldCheck className="text-blue-600" /> Staff Application Dossier
-                </h3>
-                <p className="text-xs text-slate-500">Full verified recruitment record for {viewingStaff.fullName}</p>
-              </div>
-              <button onClick={() => setViewingStaff(null)} className="p-2 hover:bg-slate-200 rounded-full transition"><X size={24} className="text-slate-400" /></button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-8 space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <Section title="Personal Profile" icon={<UserCircle size={16}/>}>
-                    <Detail label="Full Name" value={viewingStaff.fullName} />
-                    <Detail label="Gender" value={viewingStaff.gender} />
-                    <Detail label="Religion" value={viewingStaff.religion} />
-                    <Detail label="Status" value={viewingStaff.relationshipStatus} />
-                    <Detail label="Birth Order" value={viewingStaff.birthOrder} />
-                 </Section>
-
-                 <Section title="Contact & Social" icon={<Globe size={16}/>}>
-                    <Detail label="WhatsApp" value={viewingStaff.whatsapp} highlight />
-                    <Detail label="Email" value={viewingStaff.email} />
-                    <Detail label="Secondary Phone" value={viewingStaff.phoneNumber} />
-                    <Detail label="Facebook" value={viewingStaff.fbLink} isLink />
-                 </Section>
-
-                 <Section title="Work & Education" icon={<GraduationCap size={16}/>}>
-                    <Detail label="Education" value={viewingStaff.education} />
-                    <Detail label="Division" value={viewingStaff.division} />
-                    <Detail label="Student Status" value={viewingStaff.isRegularStudent ? 'Regular Student' : 'Not Regular'} />
-                    <Detail label="Available Hours" value={viewingStaff.availableHours} highlight />
-                 </Section>
-
-                 <Section title="Technical Assets" icon={<Smartphone size={16}/>}>
-                    <Detail label="Primary Device" value={viewingStaff.deviceSelection} />
-                    <Detail label="Phone Brand" value={viewingStaff.phoneBrand} />
-                    <Detail label="RAM / ROM" value={viewingStaff.phoneSpecs} />
-                    <Detail label="Uses IMO?" value={viewingStaff.usesImo} />
-                 </Section>
-
-                 <div className="md:col-span-2 space-y-2">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <StickyNote size={14}/> Professional Background
-                    </p>
-                    <div className="bg-slate-50 p-4 rounded-2xl border text-sm text-slate-700 italic leading-relaxed">
-                      {viewingStaff.previousSites || 'No previous site experience listed.'}
-                    </div>
-                 </div>
-              </div>
-            </div>
-            
-            <div className="p-8 border-t bg-slate-50 flex justify-end gap-3">
-               <button 
-                  onClick={() => setViewingStaff(null)}
-                  className="bg-white border text-slate-600 px-6 py-3 rounded-2xl font-bold hover:bg-slate-100 transition"
-                >
-                  Close
-                </button>
-               <button 
-                  onClick={() => handleReject(viewingStaff.id)}
-                  className="bg-amber-50 text-amber-600 px-6 py-3 rounded-2xl font-bold border border-amber-100 hover:bg-amber-100 transition"
-                >
-                  Reject Application
-                </button>
-               <button 
-                  onClick={() => handleApprove(viewingStaff.id)}
-                  className="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-100 flex items-center gap-2 hover:bg-emerald-700 transition"
-                >
-                  <CheckCircle size={18} /> Approve Instructor
-                </button>
-            </div>
           </div>
         </div>
       )}
